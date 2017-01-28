@@ -26,7 +26,7 @@ if __name__ == '__main__':
     args.add_argument('-d', '--default',
                       help='Choose first search result by default.',
                       action='store_true')
-    args.add_argument('-o', '--overwrite',
+    args.add_argument('-w', '--overwrite',
                       help='Overwrite existed lyrics',
                       action='store_true')
     argsp = args.parse_args()
@@ -40,12 +40,13 @@ if __name__ == '__main__':
         if hasLyrics(song) and not argsp.overwrite:
             qprint("Lyrics already exists for '%s'" % song['title'])
         else:
-            qprint(song['title'])
-            # lyric = getLyrics(songTitle=song['title'],
-            #                          songDefault=argsp.default,
-            #                          lyricMode=argsp.mode,
-            #                          verbose=not argsp.quiet)
-            # writeLyrics(filePath=song['path'],
-            #             fileName=song['name'],
-            #             lyrics="aaaaa")
-    qprint('Done!')
+            # qprint(song['title'])
+            lyrics = getLyrics(qprint,
+                               songTitle=song['title'],
+                               songDefault=argsp.default,
+                               lyricMode=argsp.mode,
+                               lyricFormat=argsp.format,
+                               verbose=not argsp.quiet)
+            writeLyrics(song, lyrics)
+            qprint('================')
+    print('Done!')
