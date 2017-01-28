@@ -15,12 +15,16 @@ def getFileList(fileDir):
                          if path.splitext(x)[1] in fileFormat]
             if (fileNames):
                 for fileName in fileNames:
-                    tags = TinyTag.get(path.join(root, fileName))
+                    try:
+                        tags = TinyTag.get(path.join(root, fileName))
+                    except:
+                        print(fileName)
+                        tags = {}
                     fileList.append({
                         'path': root,
                         'name': fileName,
-                        'title': tags.title or path.splitext(fileName)[0],
-                        'artist': tags.artist or ''
+                        'title': tags.get('title', path.splitext(fileName)[0]),
+                        'artist': tags.get('artist', '')
                     })
         return fileList
     else:
@@ -58,9 +62,9 @@ def getLyrics(qprint, songTitle='', songDefault=False,
                    ('; '.join([j['name'] for j in s['artists']]), s['album']['name']))
             qprint()
         sid = input('Song ID: ')
-        if int(sid) == -1:
-            return ''
         while not sid.isdecimal() or int(sid) < 0 or int(sid) >= len(songs):
+            if sid == '-1':
+                return ''
             qprint('%s is invalid. Please enter a integer between 0 and %s.' % (sid, len(songs)))
             sid = input('Song ID: ')
         sid = int(sid)
