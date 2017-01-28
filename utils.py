@@ -53,7 +53,7 @@ def getLyrics(qprint, songTitle='', songDefault=False,
         'offset': 0,
         'limit': 10
     }).json()
-    songs = res['result'].get('songs', '')
+    songs = res.get('result', {}).get('songs', '')
     if len(songs) == 0:
         qprint('No result found for \'%s\'.' % songTitle)
         return ''
