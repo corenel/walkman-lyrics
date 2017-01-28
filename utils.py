@@ -41,19 +41,19 @@ def getFileList(fileDir):
 def getLyrics(qprint, songTitle='', songDefault=False,
               lyricMode='both', lyricFormat='{orig} / {trans}', verbose=False):
     # requests settings
-    session = requests.Session()
-    session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36',
-                            'Referer': 'http://music.163.com/search/'})
-    search = 'http://music.163.com/api/search/get/web'
-    # get song id
-    qprint('Searching %s' % songTitle)
-    res = session.post(search, data={
-        's': songTitle,
-        'type': 1,
-        'offset': 0,
-        'limit': 10
-    }).json()
-    songs = res.get('result', {}).get('songs', '')
+    with requests.Session() as session:
+        session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36',
+                                'Referer': 'http://music.163.com/search/'})
+        search = 'http://music.163.com/api/search/get/web'
+        # get song id
+        qprint('Searching %s' % songTitle)
+        res = session.post(search, data={
+            's': songTitle,
+            'type': 1,
+            'offset': 0,
+            'limit': 10
+        }).json()
+        songs = res.get('result', {}).get('songs', '')
     if len(songs) == 0:
         qprint('No result found for \'%s\'.' % songTitle)
         return ''

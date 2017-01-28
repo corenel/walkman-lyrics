@@ -1,5 +1,6 @@
 import argparse
 from utils import *
+from time import sleep
 
 
 def qprint(*args, **kwargs):
@@ -49,4 +50,5 @@ if __name__ == '__main__':
                                verbose=not argsp.quiet)
             writeLyrics(song, lyrics)
             qprint('================')
+            sleep(0.1)
     print('Done!')
