@@ -21,7 +21,7 @@ if __name__ == '__main__':
                            'Default: \'{orig} / {trans}\'',
                       default='{orig} / {trans}')
     args.add_argument('-q', '--quiet',
-                      help='Quiet mode, no prompt output to STDOUT, choose first search result by default.',
+                      help='Quiet mode, no prompt output and choose first search result by default.',
                       action='store_true')
     args.add_argument('-d', '--default',
                       help='Choose first search result by default.',
