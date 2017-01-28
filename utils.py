@@ -51,13 +51,15 @@ def getLyrics(qprint, songTitle='', songDefault=False,
         song = songs[0]['id']
         sid = 0
     else:
-        qprint('Choose a song to download, or ^C to exit.\n')
+        qprint('Choose a song to download, or -1 to exit.\n')
         for i, s in enumerate(songs):
             qprint('%-5s\x1b[1m%s\x1b[0m \x1b[2m(%d)\x1b[0m' % ('%s.' % i, s['name'], s['id']))
             qprint('     \x1b[0m%s | \x1b[3m%s\x1b[0m' %
                    ('; '.join([j['name'] for j in s['artists']]), s['album']['name']))
             qprint()
         sid = input('Song ID: ')
+        if int(sid) == -1:
+            return ''
         while not sid.isdecimal() or int(sid) < 0 or int(sid) >= len(songs):
             qprint('%s is invalid. Please enter a integer between 0 and %s.' % (sid, len(songs)))
             sid = input('Song ID: ')
