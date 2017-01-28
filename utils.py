@@ -17,15 +17,21 @@ def getFileList(fileDir):
                 for fileName in fileNames:
                     try:
                         tags = TinyTag.get(path.join(root, fileName))
+                        fileList.append({
+                            'path': root,
+                            'name': fileName,
+                            'title': tags.title or path.splitext(fileName)[0],
+                            'artist': tags.artist or ''
+                        })
                     except:
                         print(fileName)
-                        tags = {}
-                    fileList.append({
-                        'path': root,
-                        'name': fileName,
-                        'title': tags.get('title', path.splitext(fileName)[0]),
-                        'artist': tags.get('artist', '')
-                    })
+                        fileList.append({
+                            'path': root,
+                            'name': fileName,
+                            'title': path.splitext(fileName)[0],
+                            'artist': ''
+                        })
+
         return fileList
     else:
         print('Error: target directory not exists')
