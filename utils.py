@@ -115,10 +115,17 @@ def getLyrics(songTitle='', songDefault=False, lyricMode='both', verbose=False):
     return out
 
 
-def writeLyrics(filePath, fileName, lyrics):
-    lyricsFile = path.join(filePath, path.splitext(fileName)[0]) + '.lrc'
+def writeLyrics(song, lyrics):
+    lyricsFile = path.join(song['path'],
+                           path.splitext(song['name'])[0]) + '.lrc'
     if path.exists(lyricsFile):
         print('Lyrics already exists for %s' % lyricsFile)
     else:
         with open(lyricsFile, 'w') as of:
             of.write('\n'.join(lyrics))
+
+
+def hasLyrics(song):
+    lyricsFile = path.join(song['path'],
+                           path.splitext(song['name'])[0]) + '.lrc'
+    return path.exists(lyricsFile)

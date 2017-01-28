@@ -34,12 +34,15 @@ if __name__ == '__main__':
 
     # get lyrics
     for song in fileList:
-        qprint(song)
-        # lyric = getLyrics(songTitle=song['title'],
-        #                          songDefault=argsp.default,
-        #                          lyricMode=argsp.mode,
-        #                          verbose=not argsp.quiet)
-        # writeLyrics(filePath=song['path'],
-        #             fileName=song['name'],
-        #             lyrics="aaaaa")
+        if hasLyrics(song):
+            print("Lyrics already exists for '%s'" % song['title'])
+        else:
+            qprint(song['title'])
+            # lyric = getLyrics(songTitle=song['title'],
+            #                          songDefault=argsp.default,
+            #                          lyricMode=argsp.mode,
+            #                          verbose=not argsp.quiet)
+            # writeLyrics(filePath=song['path'],
+            #             fileName=song['name'],
+            #             lyrics="aaaaa")
     qprint('Done!')
