@@ -45,7 +45,6 @@ def getLyrics(qprint, songTitle='', songDefault=False,
         session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36',
                                 'Referer': 'http://music.163.com/search/'})
         search = 'http://music.163.com/api/search/get/web'
-        # get song id
         qprint('Searching %s' % songTitle)
         res = session.post(search, data={
             's': songTitle,
@@ -53,7 +52,8 @@ def getLyrics(qprint, songTitle='', songDefault=False,
             'offset': 0,
             'limit': 10
         }).json()
-        songs = res.get('result', {}).get('songs', '')
+    # get song id
+    songs = res.get('result', {}).get('songs', '')
     if len(songs) == 0:
         qprint('No result found for \'%s\'.' % songTitle)
         return ''
