@@ -109,7 +109,7 @@ def getLyrics(qprint, songTitle='', songDefault=False,
             continue
         ln = rm.groupdict()
         for j in ln['tag'].split(']['):
-            org[j] = ln['lrc'].strip()
+            org[formatTimestamp(j)] = ln['lrc'].strip()
     if has_trans:
         for i in req['tlyric']['lyric'].split('\n'):
             rm = r.match(i)
@@ -117,7 +117,7 @@ def getLyrics(qprint, songTitle='', songDefault=False,
                 continue
             ln = rm.groupdict()
             for j in ln['tag'].split(']['):
-                trans[j] = ln['lrc'].strip()
+                trans[formatTimestamp(j)] = ln['lrc'].strip()
     out = []
     for i in sorted(org):
         if lyricMode == 'original' or not trans[i].strip() or trans[i].strip() == org[i].strip():
@@ -128,6 +128,7 @@ def getLyrics(qprint, songTitle='', songDefault=False,
             line = ['[{tag}]' + i for i in lyricFormat.split('\n')]
         for l in line:
             out.append(l.format(tag=i, orig=org[i], trans=trans[i]))
+        print(out)
     return out
 
 
@@ -145,3 +146,10 @@ def hasLyrics(song):
     lyricsFile = path.join(song['path'],
                            path.splitext(song['name'])[0]) + '.lrc'
     return path.exists(lyricsFile)
+
+
+def formatTimestamp(timestamp):
+    # format timestamp as xx:xx.xx
+    tsp = timestamp.split(':')
+    timestamp = "%s:%05.2f" % (tsp[0], float(tsp[1]))
+    return timestamp
