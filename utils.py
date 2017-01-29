@@ -41,10 +41,11 @@ def getFileList(fileDir):
 def getLyrics(qprint, songTitle='', songDefault=False,
               lyricMode='both', lyricFormat='{orig} / {trans}', verbose=False):
     # requests settings
+    search = 'http://music.163.com/api/search/get/web'
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36',
+               'Referer': 'http://music.163.com/search/'}
     with requests.Session() as session:
-        session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36',
-                                'Referer': 'http://music.163.com/search/'})
-        search = 'http://music.163.com/api/search/get/web'
+        session.headers.update(headers)
         qprint('Searching %s' % songTitle)
         res = session.post(search, data={
             's': songTitle,
@@ -82,8 +83,10 @@ def getLyrics(qprint, songTitle='', songDefault=False,
     qprint()
     qprint('Trying to download song %s:' % song)
     qprint(songstr)
-    req = session.get('http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s' % song).json()
     # get lyrics
+    with requests.Session() as session:
+        session.headers.update(headers)
+        req = session.get('http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s' % song).json()
     if req.get('lrc', None) is None or req['lrc'].get('lyric', None) is None:
         qprint('No lyrics found.')
         return ''
