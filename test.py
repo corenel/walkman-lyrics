@@ -37,18 +37,19 @@ if __name__ == '__main__':
     fileList = getFileList(argsp.path)
 
     # get lyrics
-    for song in fileList:
+    for num, song in enumerate(fileList):
+        qprint('======== ' + str(num / len(fileList) * 100) + '% ========')
         if hasLyrics(song) and not argsp.overwrite:
             qprint("Lyrics already exists for '%s'" % song['title'])
         else:
             # qprint(song['title'])
             lyrics = getLyrics(qprint,
                                songTitle=song['title'],
+                               songArtist=song['artist'],
                                songDefault=argsp.default,
                                lyricMode=argsp.mode,
                                lyricFormat=argsp.format,
                                verbose=not argsp.quiet)
             writeLyrics(song, lyrics)
-            qprint('================')
             sleep(0.1)
-    print('Done!')
+    print('======== Done! ========')

@@ -39,31 +39,35 @@ def getFileList(fileDir):
         exit()
 
 
-def getLyrics(qprint, songTitle='', songDefault=False,
+def getLyrics(qprint, songTitle='', songArtist='', songDefault=False,
               lyricMode='both', lyricFormat='{orig} / {trans}', verbose=False):
     # requests settings
     search = 'http://music.163.com/api/search/get/web'
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36',
                'Referer': 'http://music.163.com/search/'}
+    # get song id
+    if isSimpleTitle(songTitle):
+        searchTitle = ' '.join([songTitle, songArtist])
+    else:
+        searchTitle = songTitle
     with requests.Session() as session:
         session.headers.update(headers)
-        qprint('Searching %s' % songTitle)
+        qprint('Searching: %s' % ' - '.join([songTitle, songArtist]))
         res = session.post(search, data={
-            's': songTitle,
+            's': searchTitle,
             'type': 1,
             'offset': 0,
             'limit': 10
         }).json()
-    # get song id
     songs = res.get('result', {}).get('songs', '')
     if len(songs) == 0:
         qprint('No result found for \'%s\'.' % songTitle)
         return ''
-    elif len(songs) == 1 or songDefault:
+    elif len(songs) == 1 or (songDefault and not isSimpleTitle(songTitle)):
         song = songs[0]['id']
         sid = 0
     else:
-        qprint('Choose a song to download, or -1 to exit.\n')
+        qprint('Choose a song to download lyrics, or -1 to exit.\n')
         for i, s in enumerate(songs):
             qprint('%-5s\x1b[1m%s\x1b[0m \x1b[2m(%d)\x1b[0m' % ('%s.' % i, s['name'], s['id']))
             qprint('     \x1b[0m%s | \x1b[3m%s\x1b[0m' %
@@ -73,24 +77,34 @@ def getLyrics(qprint, songTitle='', songDefault=False,
         while not sid.isdecimal() or int(sid) < 0 or int(sid) >= len(songs):
             if sid == '-1':
                 return ''
+            if sid == '':
+                sid = 0
+                break
             qprint('%s is invalid. Please enter a integer between 0 and %s.' % (sid, len(songs)))
             sid = input('Song ID: ')
         sid = int(sid)
         song = songs[int(sid)]['id']
+
     # get song info
     songinfo = [songs[sid]['name'], '; '.join([j['name'] for j in songs[sid]['artists']]), songs[sid]['album']['name']]
     songstr = '     \x1b[1m%s\x1b[0m \x1b[2m(%d)\x1b[0m\n' % (songinfo[0], songs[sid]['id'])
     songstr += '     \x1b[0m%s | \x1b[3m%s\x1b[0m\n' % (songinfo[1], songinfo[2])
     qprint()
-    qprint('Trying to download song %s:' % song)
+    qprint('Trying to download lyrics for song %s:' % song)
     qprint(songstr)
+
     # get lyrics
     with requests.Session() as session:
         session.headers.update(headers)
-        req = session.get('http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s' % song).json()
+        try:
+            req = session.get('http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s' % song).json()
+        except:
+            print(session.get('http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s' % song))
+            req = {}
     if req.get('lrc', None) is None or req['lrc'].get('lyric', None) is None:
         qprint('No lyrics found.')
         return ''
+
     # lyric mode
     has_trans = True
     if lyricMode in ['trans', 'both']:
@@ -100,6 +114,7 @@ def getLyrics(qprint, songTitle='', songDefault=False,
             lyricMode = 'original'
     else:
         has_trans = False
+
     # reformat lyrics
     org = defaultdict(str)
     trans = defaultdict(str)
@@ -158,3 +173,7 @@ def formatTimestamp(timestamp):
         # print(timestamp)
         pass
     return timestamp
+
+
+def isSimpleTitle(title):
+    return len(title.encode('utf-8')) <= 12
