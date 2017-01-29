@@ -1,6 +1,7 @@
 import requests
 import re
 import json
+import datetime
 from os import listdir, walk, path
 from tinytag import TinyTag
 from collections import defaultdict
@@ -128,7 +129,6 @@ def getLyrics(qprint, songTitle='', songDefault=False,
             line = ['[{tag}]' + i for i in lyricFormat.split('\n')]
         for l in line:
             out.append(l.format(tag=i, orig=org[i], trans=trans[i]))
-        print(out)
     return out
 
 
@@ -149,7 +149,12 @@ def hasLyrics(song):
 
 
 def formatTimestamp(timestamp):
-    # format timestamp as xx:xx.xx
-    tsp = timestamp.split(':')
-    timestamp = "%s:%05.2f" % (tsp[0], float(tsp[1]))
+    # format timestamp xx:xx.xxx as xx:xx.xx
+    if (re.findall('\d+:\d+\.\d\d\d', timestamp) != []):
+        timestamp = re.findall('\d+:\d+\.\d\d\d', timestamp)[0]
+        tsp = timestamp.split(':')
+        return '%s:%05.2f' % (tsp[0], float(tsp[1]))
+    elif (re.findall('\d+:\d+\.\d\d', timestamp) == []):
+        # print(timestamp)
+        pass
     return timestamp
