@@ -7,53 +7,54 @@ from tinytag import TinyTag
 from collections import defaultdict
 
 
-def getFileList(fileDir):
-    fileFormat = ['.m4a', '.mp3']
-    fileList = []
-    if path.exists(fileDir):
-        for root, subFolders, fileNames in walk(fileDir):
-            fileNames = [x for x in fileNames
-                         if path.splitext(x)[1] in fileFormat]
-            if (fileNames):
-                for fileName in fileNames:
+def get_file_list(file_dir):
+    file_format = ['.m4a', '.mp3']
+    file_list = []
+    if path.exists(file_dir):
+        for root, sub_dir, file_names in walk(file_dir):
+            file_names = [x for x in file_names
+                          if path.splitext(x)[1] in file_format]
+            if (file_names):
+                for file_name in file_names:
                     try:
-                        tags = TinyTag.get(path.join(root, fileName))
-                        fileList.append({
+                        tags = TinyTag.get(path.join(root, file_name))
+                        file_list.append({
                             'path': root,
-                            'name': fileName,
-                            'title': tags.title or path.splitext(fileName)[0],
+                            'name': file_name,
+                            'title': tags.title or path.splitext(file_name)[0],
                             'artist': tags.artist or ''
                         })
                     except:
-                        print(fileName)
-                        fileList.append({
+                        print(file_name)
+                        file_list.append({
                             'path': root,
-                            'name': fileName,
-                            'title': path.splitext(fileName)[0],
+                            'name': file_name,
+                            'title': path.splitext(file_name)[0],
                             'artist': ''
                         })
 
-        return fileList
+        return file_list
     else:
         print('Error: target directory not exists')
         exit()
 
 
-def getLyrics(qprint, songTitle='', songArtist='', songDefault=False,
-              lyricMode='both', lyricFormat='{orig} / {trans}', verbose=False):
+def get_lyrics(qprint, song_title='', song_artist='', song_default=False,
+               lyric_mode='both', lyric_format='{orig} / {trans}', verbose=False):
     # requests settings
-    search = 'http://music.163.com/api/search/get/web'
+    search_song = 'http://music.163.com/api/search/get/web'
+    search_lrc = 'http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s'
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36',
                'Referer': 'http://music.163.com/search/'}
     # get song id
-    if isSimpleTitle(songTitle):
-        searchTitle = ' '.join([songTitle, songArtist])
+    if is_simple_title(song_title):
+        searchTitle = ' '.join([song_title, song_artist])
     else:
-        searchTitle = songTitle
+        searchTitle = song_title
     with requests.Session() as session:
         session.headers.update(headers)
-        qprint('Searching: %s' % ' - '.join([songTitle, songArtist]))
-        res = session.post(search, data={
+        qprint('Searching: %s' % ' - '.join([song_title, song_artist]))
+        res = session.post(search_song, data={
             's': searchTitle,
             'type': 1,
             'offset': 0,
@@ -61,9 +62,9 @@ def getLyrics(qprint, songTitle='', songArtist='', songDefault=False,
         }).json()
     songs = res.get('result', {}).get('songs', '')
     if len(songs) == 0:
-        qprint('No result found for \'%s\'.' % songTitle)
+        qprint('No result found for \'%s\'.' % song_title)
         return ''
-    elif len(songs) == 1 or not verbose or (songDefault and not isSimpleTitle(songTitle)):
+    elif len(songs) == 1 or not verbose or (song_default and not is_simple_title(song_title)):
         song = songs[0]['id']
         sid = 0
     else:
@@ -97,9 +98,9 @@ def getLyrics(qprint, songTitle='', songArtist='', songDefault=False,
     with requests.Session() as session:
         session.headers.update(headers)
         try:
-            req = session.get('http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s' % song).json()
+            req = session.get(search_lrc % song).json()
         except:
-            print(session.get('http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s' % song))
+            print(session.get(search_lrc % song))
             req = {}
     if req.get('lrc', None) is None or req['lrc'].get('lyric', None) is None:
         qprint('No lyrics found.')
@@ -107,11 +108,11 @@ def getLyrics(qprint, songTitle='', songArtist='', songDefault=False,
 
     # lyric mode
     has_trans = True
-    if lyricMode in ['trans', 'both']:
+    if lyric_mode in ['trans', 'both']:
         if req.get('tlyric', None) is None or req['tlyric'].get('lyric', None) is None:
             qprint('No translation found, fallback to original lyrics.')
             has_trans = False
-            lyricMode = 'original'
+            lyric_mode = 'original'
     else:
         has_trans = False
 
@@ -125,7 +126,7 @@ def getLyrics(qprint, songTitle='', songArtist='', songDefault=False,
             continue
         ln = rm.groupdict()
         for j in ln['tag'].split(']['):
-            org[formatTimestamp(j)] = ln['lrc'].strip()
+            org[format_timestamp(j)] = ln['lrc'].strip()
     if has_trans:
         for i in req['tlyric']['lyric'].split('\n'):
             rm = r.match(i)
@@ -133,21 +134,21 @@ def getLyrics(qprint, songTitle='', songArtist='', songDefault=False,
                 continue
             ln = rm.groupdict()
             for j in ln['tag'].split(']['):
-                trans[formatTimestamp(j)] = ln['lrc'].strip()
+                trans[format_timestamp(j)] = ln['lrc'].strip()
     out = []
     for i in sorted(org):
-        if lyricMode == 'original' or not trans[i].strip() or trans[i].strip() == org[i].strip():
+        if lyric_mode == 'original' or not trans[i].strip() or trans[i].strip() == org[i].strip():
             line = ['[{tag}]{orig}']
-        elif lyricMode == 'trans' or not org[i].strip():
+        elif lyric_mode == 'trans' or not org[i].strip():
             line = ['[{tag}]{trans}']
-        elif lyricMode == 'both':
-            line = ['[{tag}]' + i for i in lyricFormat.split('\n')]
+        elif lyric_mode == 'both':
+            line = ['[{tag}]' + i for i in lyric_format.split('\n')]
         for l in line:
             out.append(l.format(tag=i, orig=org[i], trans=trans[i]))
     return out
 
 
-def writeLyrics(song, lyrics):
+def write_lyrics(song, lyrics):
     if lyrics:
         lyricsFile = path.join(song['path'],
                                path.splitext(song['name'])[0]) + '.lrc'
@@ -157,13 +158,13 @@ def writeLyrics(song, lyrics):
         pass
 
 
-def hasLyrics(song):
+def has_lyrics(song):
     lyricsFile = path.join(song['path'],
                            path.splitext(song['name'])[0]) + '.lrc'
     return path.exists(lyricsFile)
 
 
-def formatTimestamp(timestamp):
+def format_timestamp(timestamp):
     # format timestamp xx:xx.xxx as xx:xx.xx
     if (re.findall('\d+:\d+\.\d\d\d', timestamp) != []):
         timestamp = re.findall('\d+:\d+\.\d\d\d', timestamp)[0]
@@ -175,5 +176,5 @@ def formatTimestamp(timestamp):
     return timestamp
 
 
-def isSimpleTitle(title):
+def is_simple_title(title):
     return len(title.encode('utf-8')) <= 12
