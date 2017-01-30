@@ -63,7 +63,7 @@ def getLyrics(qprint, songTitle='', songArtist='', songDefault=False,
     if len(songs) == 0:
         qprint('No result found for \'%s\'.' % songTitle)
         return ''
-    elif len(songs) == 1 or (songDefault and not isSimpleTitle(songTitle)):
+    elif len(songs) == 1 or not verbose or (songDefault and not isSimpleTitle(songTitle)):
         song = songs[0]['id']
         sid = 0
     else:
