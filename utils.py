@@ -13,7 +13,7 @@ def get_file_list(file_dir):
     if path.exists(file_dir):
         for root, sub_dir, file_names in walk(file_dir):
             file_names = [x for x in file_names
-                          if path.splitext(x)[1] in file_format]
+                          if path.splitext(x)[1] in file_format and path.splitext(x)[0][0] != '.']
             if (file_names):
                 for file_name in file_names:
                     try:
