@@ -12,10 +12,13 @@ $ python3 test.py [-h] [-m {trans,original,both}] [-f FORMAT] [-q] [-d] [-w] pat
 ```
 
 * Positional arguments:
-  * `path`: Root path for Walkman
+  * `path`: Root path for Walkman, e.g. `/Volumes/SD_CARD/MUSIC/`
 * Optional arguments:
   * `-h`, `--help`: Show help message and exit
   * `-m {trans,original,both}`, `--mode {trans,original,both}`: Mode of LRC file
+    * `trans`: only save translated lyrics
+    * `original`: only save original lyrics
+    * `both`: save both original and translated lyrics. Lyrics format is set by `-f` or -`-format`.
   * `-f FORMAT`, `--format FORMAT`: Format to combine both types of lyrics
     * Default: `'{orig} / {trans}'`
   * `-q`, `--quiet`: Quiet mode, no prompt output and choose first search result by default.
