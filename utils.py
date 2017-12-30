@@ -2,6 +2,7 @@ import requests
 import re
 import json
 import datetime
+import shutil
 from os import listdir, walk, path
 from tinytag import TinyTag
 from collections import defaultdict
@@ -157,6 +158,11 @@ def write_lyrics(song, lyrics):
     else:
         pass
 
+def copy_lyrics(song, lrc_src):
+    lrc_dst = path.join(song['path'],
+                        path.splitext(song['name'])[0]) + '.lrc'
+    shutil.copy(lrc_src, lrc_dst)
+    print('copy {} to {}'.format(lrc_src, lrc_dst))
 
 def has_lyrics(song):
     lyricsFile = path.join(song['path'],

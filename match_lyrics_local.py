@@ -1,6 +1,7 @@
 import argparse
-from utils import get_file_list, has_lyrics, match_lyrics
 import os
+from utils import (get_file_list, has_lyrics, match_lyrics,
+                   copy_lyrics)
 
 
 def qprint(*args, **kwargs):
@@ -48,5 +49,7 @@ if __name__ == '__main__':
         else:
             qprint(song['title'])
             lrc_file = match_lyrics(song['title'], song['artist'], LRC_LIST)
+            if lrc_file:
+                copy_lyrics(song, os.path.join(argsp.lrc_path, lrc_file))
 
     print('======== Done! ========')
