@@ -5,10 +5,10 @@ import datetime
 from os import listdir, walk, path
 from tinytag import TinyTag
 from collections import defaultdict
+from fuzzywuzzy import process
 
 
-def get_file_list(file_dir):
-    file_format = ['.m4a', '.mp3']
+def get_file_list(file_dir, file_format=['.m4a', '.mp3']):
     file_list = []
     if path.exists(file_dir):
         for root, sub_dir, file_names in walk(file_dir):
@@ -178,3 +178,10 @@ def format_timestamp(timestamp):
 
 def is_simple_title(title):
     return len(title.encode('utf-8')) <= 12
+
+
+def match_lyrics(title, artist, lrc_list, ths=80):
+    res = process.extractOne("{} - {}.lrc".format(title, artist), lrc_list)
+    print(res)
+    lrc_file = res[0] if res is not None and res[1] >= ths else None
+    return lrc_file
