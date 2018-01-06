@@ -13,17 +13,24 @@ def get_file_list(file_dir, file_format=['.m4a', '.mp3']):
     file_list = []
     if path.exists(file_dir):
         for root, sub_dir, file_names in walk(file_dir):
-            file_names = [x for x in file_names
-                          if path.splitext(x)[1] in file_format and path.splitext(x)[0][0] != '.']
+            file_names = [
+                x for x in file_names
+                if path.splitext(x)[1] in file_format and
+                path.splitext(x)[0][0] != '.'
+            ]
             if (file_names):
                 for file_name in file_names:
                     try:
                         tags = TinyTag.get(path.join(root, file_name))
                         file_list.append({
-                            'path': root,
-                            'name': file_name,
-                            'title': tags.title or path.splitext(file_name)[0],
-                            'artist': tags.artist or ''
+                            'path':
+                            root,
+                            'name':
+                            file_name,
+                            'title':
+                            tags.title or path.splitext(file_name)[0],
+                            'artist':
+                            tags.artist or ''
                         })
                     except:
                         print(file_name)
@@ -40,13 +47,22 @@ def get_file_list(file_dir, file_format=['.m4a', '.mp3']):
         exit()
 
 
-def get_lyrics(qprint, song_title='', song_artist='', song_default=False,
-               lyric_mode='both', lyric_format='{orig} / {trans}', verbose=False):
+def get_lyrics(qprint,
+               song_title='',
+               song_artist='',
+               song_default=False,
+               lyric_mode='both',
+               lyric_format='{orig} / {trans}',
+               verbose=False):
     # requests settings
     search_song = 'http://music.163.com/api/search/get/web'
     search_lrc = 'http://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=%s'
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36',
-               'Referer': 'http://music.163.com/search/'}
+    headers = {
+        'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36',
+        'Referer':
+        'http://music.163.com/search/'
+    }
     # get song id
     if is_simple_title(song_title):
         searchTitle = ' '.join([song_title, song_artist])
@@ -55,25 +71,30 @@ def get_lyrics(qprint, song_title='', song_artist='', song_default=False,
     with requests.Session() as session:
         session.headers.update(headers)
         qprint('Searching: %s' % ' - '.join([song_title, song_artist]))
-        res = session.post(search_song, data={
-            's': searchTitle,
-            'type': 1,
-            'offset': 0,
-            'limit': 10
-        }).json()
+        res = session.post(
+            search_song,
+            data={
+                's': searchTitle,
+                'type': 1,
+                'offset': 0,
+                'limit': 10
+            }).json()
     songs = res.get('result', {}).get('songs', '')
     if len(songs) == 0:
         qprint('No result found for \'%s\'.' % song_title)
         return ''
-    elif len(songs) == 1 or not verbose or (song_default and not is_simple_title(song_title)):
+    elif len(songs) == 1 or not verbose or (song_default and
+                                            not is_simple_title(song_title)):
         song = songs[0]['id']
         sid = 0
     else:
         qprint('Choose a song to download lyrics, or -1 to exit.\n')
         for i, s in enumerate(songs):
-            qprint('%-5s\x1b[1m%s\x1b[0m \x1b[2m(%d)\x1b[0m' % ('%s.' % i, s['name'], s['id']))
+            qprint('%-5s\x1b[1m%s\x1b[0m \x1b[2m(%d)\x1b[0m' %
+                   ('%s.' % i, s['name'], s['id']))
             qprint('     \x1b[0m%s | \x1b[3m%s\x1b[0m' %
-                   ('; '.join([j['name'] for j in s['artists']]), s['album']['name']))
+                   ('; '.join([j['name'] for j in s['artists']]),
+                    s['album']['name']))
             qprint()
         sid = input('Song ID: ')
         while not sid.isdecimal() or int(sid) < 0 or int(sid) >= len(songs):
@@ -82,15 +103,22 @@ def get_lyrics(qprint, song_title='', song_artist='', song_default=False,
             if sid == '':
                 sid = 0
                 break
-            qprint('%s is invalid. Please enter a integer between 0 and %s.' % (sid, len(songs)))
+            qprint('%s is invalid. Please enter a integer between 0 and %s.' %
+                   (sid, len(songs)))
             sid = input('Song ID: ')
         sid = int(sid)
         song = songs[int(sid)]['id']
 
     # get song info
-    songinfo = [songs[sid]['name'], '; '.join([j['name'] for j in songs[sid]['artists']]), songs[sid]['album']['name']]
-    songstr = '     \x1b[1m%s\x1b[0m \x1b[2m(%d)\x1b[0m\n' % (songinfo[0], songs[sid]['id'])
-    songstr += '     \x1b[0m%s | \x1b[3m%s\x1b[0m\n' % (songinfo[1], songinfo[2])
+    songinfo = [
+        songs[sid]['name'],
+        '; '.join([j['name'] for j in songs[sid]['artists']]),
+        songs[sid]['album']['name']
+    ]
+    songstr = '     \x1b[1m%s\x1b[0m \x1b[2m(%d)\x1b[0m\n' % (songinfo[0],
+                                                              songs[sid]['id'])
+    songstr += '     \x1b[0m%s | \x1b[3m%s\x1b[0m\n' % (songinfo[1],
+                                                        songinfo[2])
     qprint()
     qprint('Trying to download lyrics for song %s:' % song)
     qprint(songstr)
@@ -110,7 +138,8 @@ def get_lyrics(qprint, song_title='', song_artist='', song_default=False,
     # lyric mode
     has_trans = True
     if lyric_mode in ['trans', 'both']:
-        if req.get('tlyric', None) is None or req['tlyric'].get('lyric', None) is None:
+        if req.get('tlyric', None) is None or req['tlyric'].get('lyric',
+                                                                None) is None:
             qprint('No translation found, fallback to original lyrics.')
             has_trans = False
             lyric_mode = 'original'
@@ -138,7 +167,8 @@ def get_lyrics(qprint, song_title='', song_artist='', song_default=False,
                 trans[format_timestamp(j)] = ln['lrc'].strip()
     out = []
     for i in sorted(org):
-        if lyric_mode == 'original' or not trans[i].strip() or trans[i].strip() == org[i].strip():
+        if lyric_mode == 'original' or not trans[i].strip() or trans[i].strip(
+        ) == org[i].strip():
             line = ['[{tag}]{orig}']
         elif lyric_mode == 'trans' or not org[i].strip():
             line = ['[{tag}]{trans}']
@@ -158,16 +188,17 @@ def write_lyrics(song, lyrics):
     else:
         pass
 
+
 def copy_lyrics(song, lrc_src):
-    lrc_dst = path.join(song['path'],
-                        path.splitext(song['name'])[0]) + '.lrc'
+    lrc_dst = path.join(song['path'], path.splitext(song['name'])[0]) + '.lrc'
     shutil.copy(lrc_src, lrc_dst)
     print('copy {} to {}'.format(lrc_src, lrc_dst))
 
+
 def has_lyrics(song):
-    lyricsFile = path.join(song['path'],
-                           path.splitext(song['name'])[0]) + '.lrc'
-    return path.exists(lyricsFile)
+    lyrics_file = path.join(song['path'],
+                            path.splitext(song['name'])[0]) + '.lrc'
+    return path.exists(lyrics_file)
 
 
 def format_timestamp(timestamp):
@@ -180,6 +211,34 @@ def format_timestamp(timestamp):
         # print(timestamp)
         pass
     return timestamp
+
+
+def format_lyrics(lrc_file):
+    """Format lyrics file with two timpstamp per line."""
+    formatted = []
+    with open(lrc_file) as f:
+        lines = f.readlines()
+        lrc_lines = [
+            l.strip()
+            for l in lines
+            if re.findall('\[\d+:\d+\.\d+\]', l) != []
+        ]
+        for idx, lrc_line in enumerate(lrc_lines):
+            if idx + 1 == len(lrc_lines):
+                continue
+            curr_timestamp = re.findall('\d+:\d+\.\d+', lrc_line)[0]
+            next_timestamp = re.findall('\d+:\d+\.\d+', lrc_lines[idx + 1])[0]
+            curr_timestamp_formatted = format_timestamp(curr_timestamp)
+            next_timestamp_formatted = format_timestamp(next_timestamp)
+
+            curr_line_split = lrc_line.split('[{}]'.format(curr_timestamp))
+            curr_lyrics = curr_line_split[1] if len(
+                curr_line_split) == 2 else ''
+
+            formatted.append('[{}][{}]{}'.format(curr_timestamp_formatted,
+                                                 next_timestamp_formatted,
+                                                 curr_lyrics))
+    return formatted
 
 
 def is_simple_title(title):
